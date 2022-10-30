@@ -10,12 +10,12 @@
 #include "../src/combotree_config.h"
 #include "fast-fair/btree.h"
 #include "nvm_alloc.h"
-#include "apex/apex.h"
 #include "lbtree/lbtree_wrapper.hpp"
 #include "random.h"
+#include "alex/alex.h"
+#define USE_MEM
 
 using combotree::ComboTree;
-// using FastFair::btree;
 using namespace std;
 
 /*
@@ -98,6 +98,78 @@ namespace dbInter
     out << std::fixed << size;
     return out.str() + suffix[arr_len - 1];
   }
+
+  class AlexDB : public ycsbc::KvDB
+  {
+    typedef uint64_t KEY_TYPE;
+    typedef uint64_t PAYLOAD_TYPE;
+    using Alloc = std::allocator<std::pair<KEY_TYPE, PAYLOAD_TYPE>>;
+    typedef alex::Alex<KEY_TYPE, PAYLOAD_TYPE, alex::AlexCompare, Alloc> alex_t;
+
+  public:
+    AlexDB() : alex_(nullptr) {}
+    AlexDB(alex_t *alex) : alex_(alex) {}
+    virtual ~AlexDB()
+    {
+      delete alex_;
+    }
+
+    void Init()
+    {
+      alex_ = new alex_t();
+    }
+
+    void Bulk_load(const std::pair<uint64_t, uint64_t> data[], int size)
+    {
+      alex_->bulk_load(data, size);
+    }
+
+    void Info()
+    {
+      // alex_->PrintInfo();
+    }
+
+    int Put(uint64_t key, uint64_t value)
+    {
+      alex_->insert(key, value);
+      return 1;
+    }
+    int Get(uint64_t key, uint64_t &value)
+    {
+      value = *(alex_->get_payload(key));
+      // assert(value == key);
+      return 1;
+    }
+    int Update(uint64_t key, uint64_t value)
+    {
+      uint64_t *addrs = (alex_->get_payload(key));
+      *addrs = value;
+      return 1;
+    }
+    int Delete(uint64_t key)
+    {
+      alex_->erase(key);
+      return 1;
+    }
+    int Scan(uint64_t start_key, int len, std::vector<std::pair<uint64_t, uint64_t>> &results)
+    {
+      auto it = alex_->lower_bound(start_key);
+      int num_entries = 0;
+      while (num_entries < len && it != alex_->end())
+      {
+        results.push_back({it.key(), it.payload()});
+        num_entries++;
+        it++;
+      }
+      return 1;
+    }
+    void PrintStatic()
+    {
+    }
+
+  private:
+    alex_t *alex_;
+  };
 
   class FastFairDb : public ycsbc::KvDB
   {
@@ -257,93 +329,6 @@ namespace dbInter
   private:
     lbtree_wrapper *tree_;
     char *kp, *vp;
-  };
-
-  class ApexDB : public ycsbc::KvDB
-  {
-    typedef uint64_t KEY_TYPE;
-    typedef uint64_t PAYLOAD_TYPE;
-    using Alloc = my_alloc::allocator<std::pair<KEY_TYPE, PAYLOAD_TYPE>>;
-    // #ifdef USE_MEM
-    //     using Alloc = std::allocator<std::pair<KEY_TYPE, PAYLOAD_TYPE>>;
-    // #else
-    //     using Alloc = NVM::allocator<std::pair<KEY_TYPE, PAYLOAD_TYPE>>;
-    // #endif
-    typedef alex::Apex<KEY_TYPE, PAYLOAD_TYPE, alex::AlexCompare, Alloc> apex_t;
-
-  public:
-    ApexDB() : apex_(nullptr) {}
-    ApexDB(apex_t *apex) : apex_(apex) {}
-    virtual ~ApexDB()
-    {
-      my_alloc::BasePMPool::ClosePool();
-      delete apex_;
-      apex_ = NULL;
-    }
-
-    void Init()
-    {
-      Tree<uint64_t, uint64_t> *index = nullptr;
-
-      bool recover = my_alloc::BasePMPool::Initialize(pool_name, pool_size);
-      auto index_ptr = reinterpret_cast<Tree<uint64_t, uint64_t> **>(my_alloc::BasePMPool::GetRoot(sizeof(Tree<uint64_t, uint64_t> *)));
-      if (recover)
-      {
-        cout << "recover\n";
-        index = reinterpret_cast<Tree<uint64_t, uint64_t> *>(reinterpret_cast<char *>(*index_ptr) + 48);
-        new (index) alex::Apex<uint64_t, uint64_t>(recover);
-      }
-      else
-      {
-        my_alloc::BasePMPool::ZAllocate(reinterpret_cast<void **>(index_ptr), sizeof(alex::Apex<uint64_t, uint64_t>) + 64);
-        index = reinterpret_cast<Tree<uint64_t, uint64_t> *>(reinterpret_cast<char *>(*index_ptr) + 48);
-        new (index) alex::Apex<uint64_t, uint64_t>();
-      }
-      apex_ = index;
-    }
-
-    void Bulk_load(const std::pair<uint64_t, uint64_t> data[], int size)
-    {
-      apex_->bulk_load(data, size);
-    }
-
-    void Info()
-    {
-      // apex_->PrintInfo();
-    }
-
-    int Put(uint64_t key, uint64_t value)
-    {
-      apex_->insert(key, value);
-      return 1;
-    }
-    int Get(uint64_t key, uint64_t &value)
-    {
-      apex_->search(key, &value);
-      // assert(value == key);
-      return 1;
-    }
-    int Update(uint64_t key, uint64_t value)
-    {
-      apex_->update(key, value);
-      return 1;
-    }
-    int Delete(uint64_t key)
-    {
-      apex_->erase(key);
-      return 1;
-    }
-    int Scan(uint64_t start_key, int len, std::vector<std::pair<uint64_t, uint64_t>> &results)
-    {
-      // apex_->range_scan_by_size(start_key, len, results);
-      return 1;
-    }
-    void PrintStatic()
-    {
-    }
-
-  private:
-    Tree<uint64_t, uint64_t> *apex_;
   };
 
 } // namespace dbInter

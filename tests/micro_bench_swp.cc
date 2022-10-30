@@ -20,8 +20,8 @@
 #include "nvm_alloc.h"
 #include "utils.h"
 
-#define REST true
-// #define REST false
+// #define REST true
+#define REST false
 
 using combotree::ComboTree;
 using combotree::Random;
@@ -52,7 +52,7 @@ uint64_t us_times;
 uint64_t load_pos = 0;
 int load_size = 0;
 size_t init_dram_space_use;
-std::string dbName = "apex";
+std::string dbName = "";
 
 // 实时获取程序占用的内存，单位：kb。
 size_t physical_memory_used_by_process()
@@ -137,7 +137,7 @@ std::vector<T> read_data_from_osm(
 
 template <typename T>
 std::vector<T> load_data_from_osm(
-    const std::string dataname = "/home/lbl/dataset/generate_random_osm_cellid.dat")
+    const std::string dataname = "/home/lbl/dataset/generate_random_ycsb.dat")
 {
     return util::load_data<T>(dataname);
 }
@@ -253,7 +253,7 @@ void load()
     cout << "Start loading ...." << endl;
     timer.Record("start");
 
-    if (dbName == "apex") // bulk load
+    if (dbName == "alex") // bulk load
     {
         auto values = new std::pair<uint64_t, uint64_t>[LOAD_SIZE];
         for (int i = 0; i < LOAD_SIZE; i++)
@@ -289,7 +289,7 @@ void load()
     }
 }
 
-void test_uniform()
+void test_uniform(string rwtype)
 {
     if (REST)
     {
@@ -297,12 +297,22 @@ void test_uniform()
         remove_cache();
     }
     cout << "------------------------------" << endl;
-    cout << "Start Testing Uniform Workload" << endl;
+    cout << "Start Testing Uniform Workload: ";
+    size_t tot;
+    if (rwtype == "r")
+    {
+        cout << "Read" << endl;
+        tot = GET_SIZE;
+    }
+    else
+    {
+        cout << "Write" << endl;
+        tot = PUT_SIZE;
+    }
     util::FastRandom ranny(18);
     vector<uint32_t> rand_pos;
     std::mt19937_64 gen(std::random_device{}());
     std::uniform_int_distribution<uint32_t> dis(0, load_pos - 1);
-    size_t tot = GET_SIZE + PUT_SIZE;
     for (uint64_t i = 0; i < tot; i++)
     {
         rand_pos.push_back(ranny.RandUint32(0, load_pos - 1));
@@ -312,19 +322,25 @@ void test_uniform()
 
     int wrong_get = 0;
     uint64_t value = 0;
-    for (uint64_t i = 0; i < GET_SIZE; i++)
+    if (rwtype == "r")
     {
-        db->Get(data_base[rand_pos[i]], value);
-        // cout << "get: " << data_base[rand_pos[i]] << endl;
-        if (value != data_base[rand_pos[i]] + 1)
+        for (uint64_t i = 0; i < GET_SIZE; i++)
         {
-            wrong_get++;
+            db->Get(data_base[rand_pos[i]], value);
+            // cout << i << " get: " << data_base[rand_pos[i]] << endl;
+            if (value != data_base[rand_pos[i]] + 1)
+            {
+                wrong_get++;
+            }
         }
     }
-    for (uint64_t i = 0; i < PUT_SIZE; i++)
+    else
     {
-        // cout << "write: " << data_base[rand_pos[i]] << endl;
-        db->Update(data_base[rand_pos[i]], ranny.RandUint32(0, INT32_MAX));
+        for (uint64_t i = 0; i < PUT_SIZE; i++)
+        {
+            // cout << "write: " << data_base[rand_pos[i]] << endl;
+            db->Update(data_base[rand_pos[i]], ranny.RandUint32(0, INT32_MAX));
+        }
     }
 
     timer.Record("stop");
@@ -499,9 +515,9 @@ void init_opts(int argc, char *argv[])
     {
         db = new FastFairDb();
     }
-    else if (dbName == "apex")
+    else if (dbName == "alex")
     {
-        db = new ApexDB();
+        db = new AlexDB();
     }
     else if (dbName == "lbtree")
     {
@@ -521,13 +537,14 @@ int main(int argc, char *argv[])
     // db->Info();
     if (Reverse)
     {
-        test_all_zipfian();
-        test_uniform();
+        // test_all_zipfian();
+        // test_uniform();
     }
     else
     {
-        test_uniform();
-        test_all_zipfian();
+        test_uniform("r");
+        test_uniform("w");
+        // test_all_zipfian();
     }
     return 0;
 }

@@ -1,0 +1,10 @@
+2022年 10月 30日 星期日 23:27:26 CST
+THREAD NUMBER:         1
+LOAD_SIZE:             10000000
+PUT_SIZE:              0
+GET_SIZE:              0
+DB  name:              2000000
+Loads type:            3
+Reverse:               0
+read 2000000 values from /home/lbl/dataset/generate_random_ycsb.dat in 18 ms (111.111 M values/s)
+before newdb, dram space use: 0.0217476 GB

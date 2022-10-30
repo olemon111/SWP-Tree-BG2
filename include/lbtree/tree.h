@@ -108,9 +108,9 @@ static inline unsigned long long rdtsc(void)
 
 // compute ceiling(x/y) and floor(x/y)
 #define ceiling(x, y) (((x) + (y)-1) / (y))
-#define floor(x, y) ((x) / (y))
+#define lbt_floor(x, y) ((x) / (y))
 
-#define swap(x, y)   \
+#define lbt_swap(x, y)   \
    do                \
    {                 \
       auto _t = (x); \

@@ -499,7 +499,7 @@ int parse_command(int argc, char **argv)
         int level = the_treep->bulkload(1, input, bfill);
 
         // insertion: keynum-1 keys
-        int keys_per_thread = floor(keynum - 1, worker_thread_num);
+        int keys_per_thread = lbt_floor(keynum - 1, worker_thread_num);
 
         // run tests with multiple threads
         std::thread threads[worker_thread_num];
@@ -558,7 +558,7 @@ int parse_command(int argc, char **argv)
         the_treep->randomize();
 
         // insertion: keynum even keys
-        int keys_per_thread = floor(keynum, worker_thread_num);
+        int keys_per_thread = lbt_floor(keynum, worker_thread_num);
 
         // run tests with multiple threads
         std::thread threads[worker_thread_num];
@@ -652,7 +652,7 @@ int parse_command(int argc, char **argv)
 
       // delete half of the keys
       {
-        int range = floor(keynum, worker_thread_num);
+        int range = lbt_floor(keynum, worker_thread_num);
         if (range % 2 == 1)
           range = range - 1; // ensure range is even number
 
@@ -678,7 +678,7 @@ int parse_command(int argc, char **argv)
 
       // duplicate deletions: do the same deletions again
       {
-        int range = floor(keynum, worker_thread_num);
+        int range = lbt_floor(keynum, worker_thread_num);
         if (range % 2 == 1)
           range = range - 1; // ensure range is even number
 
@@ -712,7 +712,7 @@ int parse_command(int argc, char **argv)
 
         // delete ekey, ekey-2, ekey-4, ... > skey
         {
-          int range = floor(ekey - skey, worker_thread_num);
+          int range = lbt_floor(ekey - skey, worker_thread_num);
           if (range % 2 == 1)
             range = range - 1; // ensure range is even number
 
@@ -746,7 +746,7 @@ int parse_command(int argc, char **argv)
       {
         // delete skey, skey+2, skey+4, ... , <ekey
         {
-          int range = floor(ekey - skey, worker_thread_num);
+          int range = lbt_floor(ekey - skey, worker_thread_num);
           if (range % 2 == 1)
             range = range - 1; // ensure range is even number
 
@@ -855,7 +855,7 @@ int parse_command(int argc, char **argv)
              bulkload_num, level);
 
       // insertion: [bulkload_num, keynum-1], keynum-bulkload_num keys
-      int range = floor(keynum - bulkload_num, worker_thread_num);
+      int range = lbt_floor(keynum - bulkload_num, worker_thread_num);
 
       // run tests with multiple threads
       std::thread threads[worker_thread_num];
@@ -912,7 +912,7 @@ int parse_command(int argc, char **argv)
       unsigned long long total_us = 0;
 
       std::thread threads[worker_thread_num];
-      int range = floor(keynum, worker_thread_num);
+      int range = lbt_floor(keynum, worker_thread_num);
       std::atomic<int> found;
       found = 0;
 
@@ -974,7 +974,7 @@ int parse_command(int argc, char **argv)
       unsigned long long total_us = 0;
 
       std::thread threads[worker_thread_num];
-      int range = floor(keynum, worker_thread_num);
+      int range = lbt_floor(keynum, worker_thread_num);
       std::atomic<int> found;
       found = 0;
 
@@ -1056,7 +1056,7 @@ int parse_command(int argc, char **argv)
       unsigned long long total_us = 0;
 
       std::thread threads[worker_thread_num];
-      int range = floor(keynum, worker_thread_num);
+      int range = lbt_floor(keynum, worker_thread_num);
       std::atomic<int> found;
       found = 0;
 

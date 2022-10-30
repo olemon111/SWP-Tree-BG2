@@ -408,7 +408,7 @@ int lbtree::bulkload(int keynum, keyInput *input, float bfill)
     }
 
     // 3. compute start num_key for each thread
-    int kn_per_thread = floor(keynum, num_threads);
+    int kn_per_thread = lbt_floor(keynum, num_threads);
     int kn_max = keynum - (num_threads - 1) * kn_per_thread;
 
     for (int i = 0; i < num_threads; i++)
@@ -1819,8 +1819,8 @@ void lbtree::randomize(Pointer8B pnode, int level)
 
             if (aa != bb)
             {
-                swap(lp->fgpt[pos[aa]], lp->fgpt[pos[bb]]);
-                swap(lp->ent[pos[aa]], lp->ent[pos[bb]]);
+                lbt_swap(lp->fgpt[pos[aa]], lp->fgpt[pos[bb]]);
+                lbt_swap(lp->ent[pos[aa]], lp->ent[pos[bb]]);
             }
         }
     }

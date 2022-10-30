@@ -4,6 +4,10 @@
 >
 > 本项目为其背景测试
 
+### 测试目的
+
+- 测试现有内存学习索引结构在DRAM中的性能和空间占用
+
 ### 测试方案：
 
 - ALEX (https://github.com/microsoft/ALEX)

@@ -6,7 +6,7 @@
 
 #include "zipf.h"
 #include "general_zipf.h"
-#include "apex/uniform.h"
+#include "uniform.h"
 #include <iostream>
 #include <fstream>
 #include <algorithm>
@@ -192,7 +192,7 @@ char *generate_workload(std::string &operation_, uint64_t &generate_num, T *keys
 
     if (erase_idx != generate_num)
     {
-      LOG_FATAL("Generate wrong number of delete keys");
+      // LOG_FATAL("Generate wrong number of delete keys");
     }
 
     std::random_shuffle(&my_workload[0], &my_workload[generate_num - 1]);
