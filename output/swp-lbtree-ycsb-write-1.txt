@@ -1,0 +1,13 @@
+2022年 10月 30日 星期日 17:17:17 CST
+THREAD NUMBER:         1
+LOAD_SIZE:             2000000
+PUT_SIZE:              10000000
+GET_SIZE:              0
+DB  name:              lbtree
+Loads type:            3
+Reverse:               1
+read 2000000 values from /home/lbl/dataset/generate_random_ycsb.dat in 19 ms (105.263 M values/s)
+before newdb, dram space use: 0.0218849 GB
+init lbtree wrapper
+Start loading ....
+[Metic-Load]: Load 2000000: cost 3.44243s, kops/s: 580.985 .
