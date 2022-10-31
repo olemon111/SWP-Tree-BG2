@@ -9,11 +9,21 @@
 #include "combotree/combotree.h"
 #include "../src/combotree_config.h"
 #include "fast-fair/btree.h"
-#include "nvm_alloc.h"
 #include "lbtree/lbtree_wrapper.hpp"
 #include "random.h"
 #include "alex/alex.h"
 #include "lipp/lipp.h"
+#include "xindex/xindex.h"
+#include "xindex/xindex_impl.h"
+#include "xindex/xindex_buffer.h"
+#include "xindex/xindex_buffer_impl.h"
+#include "xindex/xindex_group.h"
+#include "xindex/xindex_group_impl.h"
+#include "xindex/xindex_model.h"
+#include "xindex/xindex_model_impl.h"
+#include "xindex/xindex_root.h"
+#include "xindex/xindex_root_impl.h"
+#include "xindex/xindex_util.h"
 
 #define USE_MEM
 
@@ -228,6 +238,106 @@ namespace dbInter
 
   private:
     lipp_t *lipp_;
+  };
+
+  class XIndexDB : public ycsbc::KvDB
+  {
+    static const int init_num = 10000;
+    int bg_num_ = 1;
+    int work_num_ = 1;
+    typedef KV::Key_t index_key_t;
+    // typedef uint64_t index_key_t;
+    typedef xindex::XIndex<index_key_t, uint64_t> xindex_t;
+
+  public:
+    XIndexDB() : xindex_(nullptr) {}
+    XIndexDB(int bg_num, int work_num) : xindex_(nullptr),
+                                         bg_num_(bg_num), work_num_(work_num)
+    {
+    }
+    XIndexDB(xindex_t *xindex) : xindex_(xindex) {}
+    virtual ~XIndexDB()
+    {
+      delete xindex_;
+    }
+
+    void Init()
+    {
+      prepare_xindex(init_num, work_num_, bg_num_);
+    }
+
+    void Bulk_load(const std::pair<uint64_t, uint64_t> data[], int size)
+    {
+      std::vector<index_key_t> initial_keys;
+      std::vector<uint64_t> vals;
+      initial_keys.resize(size);
+      vals.resize(size);
+      for (size_t i = 0; i < size; ++i)
+      {
+        initial_keys[i] = data[i].first;
+        vals[i] = data[i].second;
+      }
+      if (xindex_)
+        delete xindex_;
+      xindex_ = new xindex_t(initial_keys, vals, work_num_, bg_num_);
+    }
+
+    void Info()
+    {
+      // xindex_->show_info();
+    }
+    int Put(uint64_t key, uint64_t value)
+    {
+      // pgm_->insert(key, (char *)value);
+      xindex_->put(index_key_t(key), value >> 4, 0);
+      return 1;
+    }
+    int Get(uint64_t key, uint64_t &value)
+    {
+      xindex_->get(index_key_t(key), value, 0);
+      return 1;
+    }
+    int Update(uint64_t key, uint64_t value)
+    {
+      xindex_->put(index_key_t(key), value >> 4, 0);
+      return 1;
+    }
+    int Delete(uint64_t key)
+    {
+      xindex_->remove(key, 0);
+      return 1;
+    }
+    int Scan(uint64_t start_key, int len, std::vector<std::pair<uint64_t, uint64_t>> &results)
+    {
+      std::vector<std::pair<index_key_t, uint64_t>> tmpresults;
+      xindex_->scan(index_key_t(start_key), len, tmpresults, 0);
+      return 1;
+    }
+    void PrintStatic()
+    {
+    }
+
+  private:
+    inline void
+    prepare_xindex(size_t init_size, int fg_n, int bg_n)
+    {
+      // prepare data
+      std::random_device rd;
+      std::mt19937 gen(rd());
+      std::uniform_int_distribution<int64_t> rand_int64(
+          0, std::numeric_limits<int64_t>::max());
+      std::vector<index_key_t> initial_keys;
+      initial_keys.reserve(init_size);
+      for (size_t i = 0; i < init_size; ++i)
+      {
+        initial_keys.push_back(index_key_t(rand_int64(gen)));
+      }
+      // initilize XIndex (sort keys first)
+      std::sort(initial_keys.begin(), initial_keys.end());
+      std::vector<uint64_t> vals(initial_keys.size(), 1);
+      xindex_ = new xindex_t(initial_keys, vals, fg_n, bg_n);
+    }
+    xindex_t *xindex_;
   };
 
   class FastFairDb : public ycsbc::KvDB

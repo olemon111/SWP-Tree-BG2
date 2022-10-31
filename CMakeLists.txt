@@ -103,10 +103,6 @@ set(COMBO_TREE_SRC
   src/mempool.cc
   src/nvm-common.cc
   src/tree.cc
-
-  # src/lbtree_wrapper.cc
-
-  # src/lbtree_wrapper.hpp
 )
 
 add_library(combotree SHARED ${COMBO_TREE_SRC})

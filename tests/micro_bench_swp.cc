@@ -541,6 +541,10 @@ void init_opts(int argc, char *argv[])
     {
         db = new LBTreeDB();
     }
+    else if (dbName == "xindex")
+    {
+        db = new XIndexDB();
+    }
     else
     {
         assert(false);

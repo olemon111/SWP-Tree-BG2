@@ -137,4 +137,5 @@ function main() {
 }
 
 # main alex 2000000 10000000 0 1 0 a
-main lipp 2000000 10000000 0 1 0 a
+# main lipp 2000000 10000000 0 1 0 a
+main xindex 2000000 10000000 0 1 0 a

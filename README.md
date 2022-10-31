@@ -15,12 +15,10 @@
 - XIndex(https://ipads.se.sjtu.edu.cn:1312/opensource/xindex.git)
 - PGM (https://github.com/gvinciguerra/PGM-index)
 
-### 测试工具
-
-- YCSB (https://github.com/basicthinker/YCSB-C)
-
 
 ### 测试负载
+
+- LLT 数据集
 - uniform负载
 
 ### 测试指标

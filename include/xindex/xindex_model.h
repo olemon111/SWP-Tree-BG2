@@ -20,39 +20,40 @@
  *     https://ppopp20.sigplan.org/details/PPoPP-2020-papers/13/XIndex-A-Scalable-Learned-Index-for-Multicore-Data-Storage
  */
 
-#include "nvm_alloc.h"
 #include "mkl/mkl.h"
 #include "mkl/mkl_lapacke.h"
 
 #if !defined(XINDEX_MODEL_H)
 #define XINDEX_MODEL_H
 
-namespace xindex {
+namespace xindex
+{
 
-template <class key_t>
-class LinearModel : public NVM::AllocBase  {
-  typedef std::array<double, key_t::model_key_size()> model_key_t;
-  template <class key_t_, class val_t, bool seq>
-  friend class Root;
+  template <class key_t>
+  class LinearModel
+  {
+    typedef std::array<double, key_t::model_key_size()> model_key_t;
+    template <class key_t_, class val_t, bool seq>
+    friend class Root;
 
- public:
-  void prepare(const std::vector<key_t> &keys,
-               const std::vector<size_t> &positions);
-  void prepare(const typename std::vector<key_t>::const_iterator &keys_begin,
-               uint32_t size);
-  void prepare_model(const std::vector<double *> &model_key_ptrs,
-                     const std::vector<size_t> &positions);
-  size_t predict(const key_t &key) const;
-  size_t get_error_bound(const std::vector<key_t> &keys,
-                         const std::vector<size_t> &positions);
-  size_t get_error_bound(
-      const typename std::vector<key_t>::const_iterator &keys_begin,
-      uint32_t size);
+  public:
+    void prepare(const std::vector<key_t> &keys,
+                 const std::vector<size_t> &positions);
+    void prepare(const typename std::vector<key_t>::const_iterator &keys_begin,
+                 uint32_t size);
+    void prepare_model(const std::vector<double *> &model_key_ptrs,
+                       const std::vector<size_t> &positions);
+    size_t predict(const key_t &key) const;
+    size_t get_error_bound(const std::vector<key_t> &keys,
+                           const std::vector<size_t> &positions);
+    size_t get_error_bound(
+        const typename std::vector<key_t>::const_iterator &keys_begin,
+        uint32_t size);
 
- private:
-  std::array<double, key_t::model_key_size() + 1> weights;
-};
+  private:
+    std::array<double, key_t::model_key_size() + 1> weights;
+  };
 
-}  // namespace xindex
+} // namespace xindex
 
-#endif  // XINDEX_MODEL_H
+#endif // XINDEX_MODEL_H

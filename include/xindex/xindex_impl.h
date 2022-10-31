@@ -249,45 +249,8 @@ namespace xindex
   {
     config.exited = true;
     bg_running = false;
-    pthread_join(bg_master, nullptr);
   }
 
-  template <class key_t, class val_t, bool seq>
-  size_t XIndex<key_t, val_t, seq>::show_info()
-  {
-    size_t begin_group_i = 0;
-    size_t end_group_i = root->group_n;
-    uint64_t min,max,avg;
-    uint64_t total;
-    uint64_t group_num= 0;
-    for (size_t group_i = begin_group_i; group_i < end_group_i; group_i++)
-    {
-      if (group_i % 50000 == 0)
-      {
-        std::cout << "group_i: " << group_i << std::endl;
-      }
-      group_t *volatile *group = &(root->groups[group_i].second);
-      while ((*group) != nullptr){
-        std::cout<<(*group)->array_size<<std::endl;
-        group_num++;
-        if((*group)->array_size < min){
-          min = (*group)->array_size;
-        }
-        if((*group)->array_size > max){
-          max = (*group)->array_size;
-        }
-        total += (*group)->array_size;
-        group = &((*group)->next);
-      }
-    }
-    avg = total /end_group_i;
-    std::cout << "xindex group arraysize info" << std::endl;
-    std::cout << "min :" << min <<std::endl;
-    std::cout << "max :" << max <<std::endl;
-    std::cout << "avg :" << avg <<std::endl;
-    std::cout << "group_size: " << group_num << std::endl;
-    return end_group_i;
-  }
 } // namespace xindex
 
 #endif // XINDEX_IMPL_H
