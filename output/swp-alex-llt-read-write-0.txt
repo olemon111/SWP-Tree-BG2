@@ -1,4 +1,4 @@
-2022年 10月 31日 星期一 16:44:45 CST
+2022年 11月 01日 星期二 00:00:06 CST
 THREAD NUMBER:         1
 LOAD_SIZE:             2000000
 PUT_SIZE:              10000000
@@ -6,18 +6,18 @@ GET_SIZE:              10000000
 DB  name:              alex
 Loads type:            4
 Reverse:               0
-read 2000000 values from /home/lbl/dataset/generate_random_osm_longlat.dat in 15 ms (133.333 M values/s)
-before newdb, dram space use: 0.0218658 GB
+read 2000000 values from /home/lbl/dataset/generate_random_osm_longlat.dat in 14 ms (142.857 M values/s)
+before newdb, dram space use: 0.0218964 GB
 Start loading ....
-[Metic-Load]: Load 2000000: cost 1.1048s, kops/s: 1810.28 .
-after load, dram space use: 0.0218658 GB
+[Metic-Load]: Load 2000000: cost 1.08015s, kops/s: 1851.59 .
+after load, dram space use: 0.0218964 GB
 ------------------------------
 Start Testing Uniform Workload: Read
 wrong get: 0
-[Metic-Operate]: Operate 10000000, cost 1.42684s, kops/s: 7008.51 .
-dram space use: 0.120319 GB
+[Metic-Operate]: Operate 10000000, cost 1.4133s, kops/s: 7075.62 .
+dram space use: 0.120426 GB
 ------------------------------
 Start Testing Uniform Workload: Write
 wrong get: 0
-[Metic-Operate]: Operate 10000000, cost 1.76088s, kops/s: 5678.99 .
-dram space use: 0.143757 GB
+[Metic-Operate]: Operate 10000000, cost 1.8137s, kops/s: 5513.6 .
+dram space use: 0.143864 GB

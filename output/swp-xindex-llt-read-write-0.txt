@@ -1,4 +1,4 @@
-2022年 10月 31日 星期一 20:36:14 CST
+2022年 11月 01日 星期二 00:07:56 CST
 THREAD NUMBER:         1
 LOAD_SIZE:             2000000
 PUT_SIZE:              10000000
@@ -6,18 +6,18 @@ GET_SIZE:              10000000
 DB  name:              xindex
 Loads type:            4
 Reverse:               0
-read 2000000 values from /home/lbl/dataset/generate_random_osm_longlat.dat in 15 ms (133.333 M values/s)
-before newdb, dram space use: 0.0218582 GB
+read 2000000 values from /home/lbl/dataset/generate_random_osm_longlat.dat in 16 ms (125 M values/s)
+before newdb, dram space use: 0.0216293 GB
 Start loading ....
-[Metic-Load]: Load 2000000: cost 1.20808s, kops/s: 1655.52 .
-after load, dram space use: 0.0218582 GB
+[Metic-Load]: Load 2000000: cost 0.36346s, kops/s: 5502.67 .
+after load, dram space use: 0.0216293 GB
 ------------------------------
 Start Testing Uniform Workload: Read
-wrong get: 10000000
-[Metic-Operate]: Operate 10000000, cost 6.35699s, kops/s: 1573.07 .
-dram space use: 0.157242 GB
+wrong get: 0
+[Metic-Operate]: Operate 10000000, cost 3.81964s, kops/s: 2618.05 .
+dram space use: 0.234058 GB
 ------------------------------
 Start Testing Uniform Workload: Write
 wrong get: 0
-[Metic-Operate]: Operate 10000000, cost 5.33362s, kops/s: 1874.9 .
-dram space use: 0.188499 GB
+[Metic-Operate]: Operate 10000000, cost 3.84361s, kops/s: 2601.72 .
+dram space use: 0.249683 GB

@@ -24,6 +24,8 @@
 #include "xindex/xindex_root.h"
 #include "xindex/xindex_root_impl.h"
 #include "xindex/xindex_util.h"
+#include "pgm/pgm_index.hpp"
+#include "pgm/pgm_index_dynamic.hpp"
 
 #define USE_MEM
 
@@ -338,6 +340,84 @@ namespace dbInter
       xindex_ = new xindex_t(initial_keys, vals, fg_n, bg_n);
     }
     xindex_t *xindex_;
+  };
+
+  class PGMDynamicDB : public ycsbc::KvDB
+  {
+    using PGMType = pgm::PGMIndex<uint64_t>;
+    typedef pgm::DynamicPGMIndex<uint64_t, uint64_t, PGMType> DynamicPGM;
+    // typedef pgm::DynamicPGMIndex<uint64_t, char *, PGMType> DynamicPGM;
+
+  public:
+    PGMDynamicDB() : pgm_(nullptr) {}
+    PGMDynamicDB(DynamicPGM *pgm) : pgm_(pgm) {}
+    virtual ~PGMDynamicDB()
+    {
+      delete pgm_;
+    }
+
+    void Init()
+    {
+      pgm_ = new DynamicPGM();
+    }
+
+    void Bulk_load(const std::pair<uint64_t, uint64_t> data[], int size)
+    {
+      if (pgm_)
+        delete pgm_;
+      pgm_ = new DynamicPGM(&data[0], &data[0] + size);
+    }
+
+    void Info()
+    {
+    }
+
+    // void Begin_trans()
+    // {
+    //   pgm_->trans_to_read();
+    // }
+    int Put(uint64_t key, uint64_t value)
+    {
+      // pgm_->insert_or_assign(key, (char *)value);
+      pgm_->insert_or_assign(key, value);
+      return 1;
+    }
+    int Get(uint64_t key, uint64_t &value)
+    {
+      auto it = pgm_->find(key);
+      value = it->second;
+      return 1;
+    }
+    int Update(uint64_t key, uint64_t value)
+    {
+      // pgm_->insert_or_assign(key, (char *)value);
+      pgm_->insert_or_assign(key, value);
+      return 1;
+    }
+
+    int Delete(uint64_t key)
+    {
+      pgm_->erase(key);
+      return 1;
+    }
+    int Scan(uint64_t start_key, int len, std::vector<std::pair<uint64_t, uint64_t>> &results)
+    {
+      // int scan_count = 0;
+      // auto it = pgm_->find(start_key);
+      // while (it != pgm_->end() && scan_count < len)
+      // {
+      //   results.push_back({it->first, (uint64_t)it->second});
+      //   ++it;
+      //   scan_count++;
+      // }
+      return 1;
+    }
+    void PrintStatic()
+    {
+    }
+
+  private:
+    DynamicPGM *pgm_;
   };
 
   class FastFairDb : public ycsbc::KvDB

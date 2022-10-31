@@ -1,0 +1,23 @@
+2022年 11月 01日 星期二 00:12:24 CST
+THREAD NUMBER:         1
+LOAD_SIZE:             2000000
+PUT_SIZE:              10000000
+GET_SIZE:              10000000
+DB  name:              pgm
+Loads type:            4
+Reverse:               0
+read 2000000 values from /home/lbl/dataset/generate_random_osm_longlat.dat in 15 ms (133.333 M values/s)
+before newdb, dram space use: 0.0217552 GB
+Start loading ....
+[Metic-Load]: Load 2000000: cost 0.201623s, kops/s: 9919.5 .
+after load, dram space use: 0.0217552 GB
+------------------------------
+Start Testing Uniform Workload: Read
+wrong get: 0
+[Metic-Operate]: Operate 10000000, cost 6.49549s, kops/s: 1539.53 .
+dram space use: 0.0970993 GB
+------------------------------
+Start Testing Uniform Workload: Write
+wrong get: 0
+[Metic-Operate]: Operate 10000000, cost 2.11097s, kops/s: 4737.15 .
+dram space use: 0.211952 GB

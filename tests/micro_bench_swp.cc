@@ -17,11 +17,10 @@
 #include "timer.h"
 #include "util.h"
 #include "random.h"
-#include "nvm_alloc.h"
 #include "utils.h"
 
-// #define REST true
-#define REST false
+#define REST true
+// #define REST false
 
 using combotree::ComboTree;
 using combotree::Random;
@@ -262,8 +261,7 @@ void load()
     cout << "Start loading ...." << endl;
     timer.Record("start");
 
-    // if (dbName == "alex") // bulk load
-    if (dbName == "alex" || dbName == "lipp") // bulk load
+    if (dbName == "alex" || dbName == "lipp" || dbName == "xindex" || dbName == "pgm") // support bulk load
     {
         auto values = new std::pair<uint64_t, uint64_t>[LOAD_SIZE];
         for (int i = 0; i < LOAD_SIZE; i++)
@@ -544,6 +542,10 @@ void init_opts(int argc, char *argv[])
     else if (dbName == "xindex")
     {
         db = new XIndexDB();
+    }
+    else if (dbName == "pgm")
+    {
+        db = new PGMDynamicDB();
     }
     else
     {
