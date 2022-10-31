@@ -13,6 +13,8 @@
 #include "lbtree/lbtree_wrapper.hpp"
 #include "random.h"
 #include "alex/alex.h"
+#include "lipp/lipp.h"
+
 #define USE_MEM
 
 using combotree::ComboTree;
@@ -137,7 +139,6 @@ namespace dbInter
     int Get(uint64_t key, uint64_t &value)
     {
       value = *(alex_->get_payload(key));
-      // assert(value == key);
       return 1;
     }
     int Update(uint64_t key, uint64_t value)
@@ -169,6 +170,64 @@ namespace dbInter
 
   private:
     alex_t *alex_;
+  };
+
+  class LippDB : public ycsbc::KvDB
+  {
+    typedef LIPP<uint64_t, uint64_t> lipp_t;
+
+  public:
+    LippDB() : lipp_(nullptr) {}
+    LippDB(lipp_t *lipp) : lipp_(lipp) {}
+    ~LippDB()
+    {
+      delete lipp_;
+    }
+    void Init()
+    {
+      lipp_ = new lipp_t();
+    }
+    void Info()
+    {
+      // lipp_->print_depth();
+    }
+    void Bulk_load(const std::pair<uint64_t, uint64_t> data[], int size)
+    {
+      lipp_->bulk_load(data, size);
+      // lipp_->verify();
+    }
+    int Put(uint64_t key, uint64_t value)
+    {
+      lipp_->insert(key, value);
+      return 1;
+    }
+    int Get(uint64_t key, uint64_t &value)
+    {
+      value = lipp_->at(key);
+      return 1;
+    }
+    int Update(uint64_t key, uint64_t value)
+    {
+      // if (!lipp_->exists(key))
+      // {
+      lipp_->insert(key, value);
+      // }
+      return 1;
+    }
+    int Delete(uint64_t key)
+    {
+      return 1;
+    }
+    int Scan(uint64_t start_key, int len, std::vector<std::pair<uint64_t, uint64_t>> &results)
+    {
+      return 1;
+    }
+    void PrintStatic()
+    {
+    }
+
+  private:
+    lipp_t *lipp_;
   };
 
   class FastFairDb : public ycsbc::KvDB

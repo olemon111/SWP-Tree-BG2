@@ -10,8 +10,6 @@
 #include <vector>
 #include <cstring>
 #include <sstream>
-#include "nvm_alloc.h"
-
 
 typedef uint8_t bitmap_t;
 #define BITMAP_WIDTH (sizeof(bitmap_t) * 8)
@@ -91,7 +89,6 @@ public:
         : BUILD_LR_REMAIN(BUILD_LR_REMAIN), QUIET(QUIET)
     {
         {
-
             std::vector<Node *> nodes;
             for (int _ = 0; _ < 1e7; _++)
             {
@@ -333,7 +330,7 @@ public:
         printf("\t time_build_tree_bulk = %lf\n", stats.time_build_tree_bulk);
 #endif
     }
-    size_t index_size() const
+    size_t index_size(bool total = false, bool ignore_child = true) const
     {
         std::stack<Node *> s;
         s.push(root);
@@ -344,17 +341,33 @@ public:
             Node *node = s.top();
             s.pop();
             bool has_child = false;
+            if (ignore_child == false)
+            {
+                size += sizeof(*node);
+            }
             for (int i = 0; i < node->num_items; i++)
             {
-                if (BITMAP_GET(node->child_bitmap, i) == 1)
+                if (ignore_child == true)
                 {
                     size += sizeof(Item);
                     has_child = true;
+                }
+                else
+                {
+                    if (total)
+                        size += sizeof(Item);
+                }
+                if (BITMAP_GET(node->child_bitmap, i) == 1)
+                {
+                    if (!total)
+                        size += sizeof(Item);
                     s.push(node->items[i].comp.child);
                 }
             }
-            if (has_child)
+            if (ignore_child == true && has_child)
+            {
                 size += sizeof(*node);
+            }
         }
         return size;
     }
@@ -390,11 +403,7 @@ private:
     Node *root;
     std::stack<Node *> pending_two;
 
-    #ifdef USE_MEM
     std::allocator<Node> node_allocator;
-    #else
-    NVM::allocator<Node> node_allocator;
-    #endif
     Node *new_nodes(int n)
     {
         Node *p = node_allocator.allocate(n);
@@ -405,11 +414,8 @@ private:
     {
         node_allocator.deallocate(p, n);
     }
-    #ifdef USE_MEM
+
     std::allocator<Item> item_allocator;
-    #else
-    NVM::allocator<Item> item_allocator;
-    #endif
     Item *new_items(int n)
     {
         Item *p = item_allocator.allocate(n);
@@ -420,12 +426,8 @@ private:
     {
         item_allocator.deallocate(p, n);
     }
-    
-    #ifdef USE_MEM
+
     std::allocator<bitmap_t> bitmap_allocator;
-    #else
-    NVM::allocator<bitmap_t> bitmap_allocator;
-    #endif
     bitmap_t *new_bitmap(int n)
     {
         bitmap_t *p = bitmap_allocator.allocate(n);
@@ -454,10 +456,7 @@ private:
         BITMAP_SET(node->none_bitmap, 0);
         node->child_bitmap = new_bitmap(1);
         node->child_bitmap[0] = 0;
-        NVM::Mem_persist(node->items,sizeof(Item));
-        NVM::Mem_persist(node->child_bitmap,sizeof(bitmap_t));
-        NVM::Mem_persist(node->none_bitmap,sizeof(bitmap_t));
-        NVM::Mem_persist(node,sizeof(Node));
+
         return node;
     }
     /// build a tree with two keys
@@ -487,25 +486,20 @@ private:
             node->child_bitmap = new_bitmap(1);
             node->none_bitmap[0] = 0xff;
             node->child_bitmap[0] = 0;
-            NVM::Mem_persist(node->none_bitmap,sizeof(Node));
-            NVM::Mem_persist(node->child_bitmap,sizeof(Node));
-            NVM::Mem_persist(node->items,sizeof(Item)*8);
-            NVM::Mem_persist(node,sizeof(Node));    
         }
         else
         {
             node = pending_two.top();
             pending_two.pop();
         }
-        
 
-        const double mid1_key = key1;
-        const double mid2_key = key2;
+        const long double mid1_key = key1;
+        const long double mid2_key = key2;
 
         const double mid1_target = node->num_items / 3;
         const double mid2_target = node->num_items * 2 / 3;
 
-        node->model.a = (mid1_target - mid2_target) / (mid1_key - mid2_key);
+        node->model.a = (mid2_target - mid1_target) / (mid2_key - mid1_key);
         node->model.b = mid1_target - node->model.a * mid1_key;
         RT_ASSERT(isfinite(node->model.a));
         RT_ASSERT(isfinite(node->model.b));
@@ -516,7 +510,6 @@ private:
             BITMAP_CLEAR(node->none_bitmap, pos);
             node->items[pos].comp.data.key = key1;
             node->items[pos].comp.data.value = value1;
-            NVM::Mem_persist(node->items+pos,sizeof(Item));
         }
         { // insert key2&value2
             int pos = PREDICT_POS(node, key2);
@@ -524,10 +517,8 @@ private:
             BITMAP_CLEAR(node->none_bitmap, pos);
             node->items[pos].comp.data.key = key2;
             node->items[pos].comp.data.value = value2;
-            NVM::Mem_persist(node->items+pos,sizeof(Item));
         }
-        NVM::Mem_persist(node->none_bitmap,sizeof(Node));
-        NVM::Mem_persist(node->child_bitmap,sizeof(Node));
+
         return node;
     }
     /// bulk build, _keys must be sorted in asc order.
@@ -595,14 +586,16 @@ private:
                 RT_ASSERT(mid1_pos < mid2_pos);
                 RT_ASSERT(mid2_pos < size - 1);
 
-                const double mid1_key = static_cast<double>((static_cast<long double>(keys[mid1_pos]) + static_cast<long double>(keys[mid1_pos + 1])) / 2);
-                const double mid2_key = static_cast<double>((static_cast<long double>(keys[mid2_pos]) + static_cast<long double>(keys[mid2_pos + 1])) / 2);
+                const long double mid1_key =
+                    (static_cast<long double>(keys[mid1_pos]) + static_cast<long double>(keys[mid1_pos + 1])) / 2;
+                const long double mid2_key =
+                    (static_cast<long double>(keys[mid2_pos]) + static_cast<long double>(keys[mid2_pos + 1])) / 2;
 
                 node->num_items = size * static_cast<int>(BUILD_GAP_CNT + 1);
                 const double mid1_target = mid1_pos * static_cast<int>(BUILD_GAP_CNT + 1) + static_cast<int>(BUILD_GAP_CNT + 1) / 2;
                 const double mid2_target = mid2_pos * static_cast<int>(BUILD_GAP_CNT + 1) + static_cast<int>(BUILD_GAP_CNT + 1) / 2;
 
-                node->model.a = (mid1_target - mid2_target) / (mid1_key - mid2_key);
+                node->model.a = (mid2_target - mid1_target) / (mid2_key - mid1_key);
                 node->model.b = mid1_target - node->model.a * mid1_key;
                 RT_ASSERT(isfinite(node->model.a));
                 RT_ASSERT(isfinite(node->model.b));
@@ -691,7 +684,6 @@ private:
             const int end = s.top().end;
             const int level = s.top().level;
             Node *node = s.top().node;
-            NVM::Mem_persist(node,sizeof(Node));
             s.pop();
 
             RT_ASSERT(end - begin >= 2);
@@ -699,7 +691,6 @@ private:
             {
                 Node *_ = build_tree_two(_keys[begin], _values[begin], _keys[begin + 1], _values[begin + 1]);
                 memcpy(node, _, sizeof(Node));
-                NVM::Mem_persist(node,sizeof(Node));
                 delete_nodes(_, 1);
             }
             else
@@ -726,7 +717,9 @@ private:
                     int i = 0;
                     int D = 1;
                     RT_ASSERT(D <= size - 1 - D);
-                    double Ut = double(keys[size - 1 - D] - keys[D]) / double(L - 2) + 1e-6;
+                    double Ut = (static_cast<long double>(keys[size - 1 - D]) - static_cast<long double>(keys[D])) /
+                                    (static_cast<double>(L - 2)) +
+                                1e-6;
                     while (i < size - 1 - D)
                     {
                         while (i + D < size && keys[i + D] - keys[i] >= Ut)
@@ -741,14 +734,18 @@ private:
                         if (D * 3 > size)
                             break;
                         RT_ASSERT(D <= size - 1 - D);
-                        Ut = double(keys[size - 1 - D] - keys[D]) / double(L - 2) + 1e-6;
+                        Ut = (static_cast<long double>(keys[size - 1 - D]) - static_cast<long double>(keys[D])) /
+                                 (static_cast<double>(L - 2)) +
+                             1e-6;
                     }
                     if (D * 3 <= size)
                     {
                         stats.fmcd_success_times++;
 
                         node->model.a = 1.0 / Ut;
-                        node->model.b = (L - node->model.a * (keys[size - 1 - D] + keys[D])) / 2;
+                        node->model.b = (L - node->model.a * (static_cast<long double>(keys[size - 1 - D]) +
+                                                              static_cast<long double>(keys[D]))) /
+                                        2;
                         RT_ASSERT(isfinite(node->model.a));
                         RT_ASSERT(isfinite(node->model.b));
                         node->num_items = L;
@@ -764,14 +761,18 @@ private:
                         RT_ASSERT(mid1_pos < mid2_pos);
                         RT_ASSERT(mid2_pos < size - 1);
 
-                        const double mid1_key = static_cast<double>((static_cast<long double>(keys[mid1_pos]) + static_cast<long double>(keys[mid1_pos + 1])) / 2);
-                        const double mid2_key = static_cast<double>((static_cast<long double>(keys[mid2_pos]) + static_cast<long double>(keys[mid2_pos + 1])) / 2);
+                        const long double mid1_key = (static_cast<long double>(keys[mid1_pos]) +
+                                                      static_cast<long double>(keys[mid1_pos + 1])) /
+                                                     2;
+                        const long double mid2_key = (static_cast<long double>(keys[mid2_pos]) +
+                                                      static_cast<long double>(keys[mid2_pos + 1])) /
+                                                     2;
 
                         node->num_items = size * static_cast<int>(BUILD_GAP_CNT + 1);
                         const double mid1_target = mid1_pos * static_cast<int>(BUILD_GAP_CNT + 1) + static_cast<int>(BUILD_GAP_CNT + 1) / 2;
                         const double mid2_target = mid2_pos * static_cast<int>(BUILD_GAP_CNT + 1) + static_cast<int>(BUILD_GAP_CNT + 1) / 2;
 
-                        node->model.a = (mid1_target - mid2_target) / (mid1_key - mid2_key);
+                        node->model.a = (mid2_target - mid1_target) / (mid2_key - mid1_key);
                         node->model.b = mid1_target - node->model.a * mid1_key;
                         RT_ASSERT(isfinite(node->model.a));
                         RT_ASSERT(isfinite(node->model.b));
@@ -793,10 +794,7 @@ private:
                 node->child_bitmap = new_bitmap(bitmap_size);
                 memset(node->none_bitmap, 0xff, sizeof(bitmap_t) * bitmap_size);
                 memset(node->child_bitmap, 0, sizeof(bitmap_t) * bitmap_size);
-                NVM::Mem_persist(node->items,sizeof(Item)*node->num_items);
-                NVM::Mem_persist(node->child_bitmap,sizeof(bitmap_t));
-                NVM::Mem_persist(node->none_bitmap,sizeof(bitmap_t));
-                NVM::Mem_persist(node,sizeof(Node));
+
                 for (int item_i = PREDICT_POS(node, keys[0]), offset = 0; offset < size;)
                 {
                     int next = offset + 1, next_i = -1;
@@ -817,8 +815,6 @@ private:
                         BITMAP_CLEAR(node->none_bitmap, item_i);
                         node->items[item_i].comp.data.key = keys[offset];
                         node->items[item_i].comp.data.value = values[offset];
-                        NVM::Mem_persist(node->none_bitmap+item_i/8,sizeof(bitmap_t));
-                        NVM::Mem_persist(node->items+item_i,sizeof(Item));
                     }
                     else
                     {
@@ -826,9 +822,6 @@ private:
                         BITMAP_CLEAR(node->none_bitmap, item_i);
                         BITMAP_SET(node->child_bitmap, item_i);
                         node->items[item_i].comp.child = new_nodes(1);
-                        NVM::Mem_persist(node->none_bitmap+item_i/8,sizeof(bitmap_t));
-                        NVM::Mem_persist(node->child_bitmap+item_i/8,sizeof(bitmap_t));
-                        NVM::Mem_persist(node->items+item_i,sizeof(Item));
                         s.push((Segment){begin + offset, begin + next, level + 1, node->items[item_i].comp.child});
                     }
                     if (next >= size)
@@ -958,7 +951,7 @@ private:
 
     Node *insert_tree(Node *_node, const T &key, const P &value)
     {
-        constexpr int MAX_DEPTH = 512;
+        constexpr int MAX_DEPTH = 128;
         Node *path[MAX_DEPTH];
         int path_size = 0;
         int insert_to_data = 0;
@@ -970,23 +963,18 @@ private:
 
             node->size++;
             node->num_inserts++;
-            NVM::Mem_persist(node,sizeof(Node));
             int pos = PREDICT_POS(node, key);
             if (BITMAP_GET(node->none_bitmap, pos) == 1)
             {
                 BITMAP_CLEAR(node->none_bitmap, pos);
                 node->items[pos].comp.data.key = key;
                 node->items[pos].comp.data.value = value;
-                NVM::Mem_persist(node->items+pos,sizeof(Item));
-                NVM::Mem_persist(node->none_bitmap+pos/8,sizeof(bitmap_t));
                 break;
             }
             else if (BITMAP_GET(node->child_bitmap, pos) == 0)
             {
                 BITMAP_SET(node->child_bitmap, pos);
-                NVM::Mem_persist(node->child_bitmap+pos/8,sizeof(bitmap_t));
                 node->items[pos].comp.child = build_tree_two(key, value, node->items[pos].comp.data.key, node->items[pos].comp.data.value);
-                NVM::Mem_persist(node->items+pos,sizeof(Item));
                 insert_to_data = 1;
                 break;
             }

@@ -78,12 +78,12 @@ function test_read_write() {
 
     # Read and Write
     # rm -f /mnt/pmem1/lbl/*
-    Loadname="ycsb-read_write"
+    Loadname="llt-read-write"
     date | tee output/swp-${dbname}-${Loadname}-${reverse}.txt
     # gdb --args \
-    ${BUILDDIR}/microbench_swp --dbname ${dbname} --load-size ${loadnum} \
+    numactl --cpubind=0 --membind=0 ${BUILDDIR}/microbench_swp --dbname ${dbname} --load-size ${loadnum} \
     --put-size ${opnum} --get-size ${opnum} \
-    --loadstype 3 --reverse ${reverse} -t $thread | tee -a output/swp-${dbname}-${Loadname}-${reverse}.txt
+    --loadstype 4 --reverse ${reverse} -t $thread | tee -a output/swp-${dbname}-${Loadname}-${reverse}.txt
     # rm -f /mnt/pmem1/lbl/*
 
     echo "${BUILDDIR}/microbench_swp --dbname ${dbname} --load-size ${loadnum} "\
@@ -136,6 +136,5 @@ function main() {
     fi 
 }
 
-# main alex 2000000 10000000 0 1 0 r
-# main alex 2000000 10000000 0 1 0 w
-main alex 2000000 10000000 0 1 0 a
+# main alex 2000000 10000000 0 1 0 a
+main lipp 2000000 10000000 0 1 0 a

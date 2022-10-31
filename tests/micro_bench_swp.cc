@@ -83,6 +83,15 @@ size_t physical_memory_used_by_process()
     return result;
 }
 
+uint64_t get_longlat(const std::string &line)
+{
+    uint64_t id;
+    double lat, lon;
+    std::stringstream strin(line);
+    strin >> id >> lon >> lat;
+    return (lon * 180 + lat) * 1e7;
+}
+
 template <typename T>
 std::vector<T> read_data_from_osm(
     const std::string load_file,
@@ -139,7 +148,7 @@ template <typename T>
 std::vector<T> load_data_from_osm(
     const std::string dataname = "/home/lbl/dataset/generate_random_ycsb.dat")
 {
-    return util::load_data<T>(dataname);
+    return util::load_data<T>(dataname, 2000000, true);
 }
 
 std::vector<uint64_t> generate_random_ycsb(size_t op_num)
@@ -253,7 +262,8 @@ void load()
     cout << "Start loading ...." << endl;
     timer.Record("start");
 
-    if (dbName == "alex") // bulk load
+    // if (dbName == "alex") // bulk load
+    if (dbName == "alex" || dbName == "lipp") // bulk load
     {
         auto values = new std::pair<uint64_t, uint64_t>[LOAD_SIZE];
         for (int i = 0; i < LOAD_SIZE; i++)
@@ -264,6 +274,7 @@ void load()
         sort(values, values + LOAD_SIZE,
              [](auto const &a, auto const &b)
              { return a.first < b.first; });
+
         db->Bulk_load(values, int(LOAD_SIZE));
     }
     else // put one by one
@@ -274,14 +285,14 @@ void load()
             db->Put(data_base[i], data_base[i] + 1);
         }
     }
-
-    std::cerr << endl;
+    // std::cerr << endl;
 
     timer.Record("stop");
     us_times = timer.Microsecond("stop", "start");
     cout << "[Metic-Load]: Load " << LOAD_SIZE << ": "
          << "cost " << us_times / 1000000.0 << "s, "
          << "kops/s: " << (double)(LOAD_SIZE) / (double)us_times * 1000.0 << " ." << endl;
+    cout << "after load, dram space use: " << init_dram_space_use / 1024.0 / 1024.0 << " GB" << endl;
     load_pos = LOAD_SIZE;
     if (REST)
     {
@@ -326,8 +337,8 @@ void test_uniform(string rwtype)
     {
         for (uint64_t i = 0; i < GET_SIZE; i++)
         {
-            db->Get(data_base[rand_pos[i]], value);
             // cout << i << " get: " << data_base[rand_pos[i]] << endl;
+            db->Get(data_base[rand_pos[i]], value);
             if (value != data_base[rand_pos[i]] + 1)
             {
                 wrong_get++;
@@ -503,6 +514,9 @@ void init_opts(int argc, char *argv[])
     case 3:
         data_base = load_data_from_osm<uint64_t>("/home/lbl/dataset/generate_random_ycsb.dat");
         break;
+    case 4: // LLT
+        data_base = load_data_from_osm<uint64_t>("/home/lbl/dataset/generate_random_osm_longlat.dat");
+        break;
     default:
         data_base = generate_uniform_random(LOAD_SIZE);
         break;
@@ -518,6 +532,10 @@ void init_opts(int argc, char *argv[])
     else if (dbName == "alex")
     {
         db = new AlexDB();
+    }
+    else if (dbName == "lipp")
+    {
+        db = new LippDB();
     }
     else if (dbName == "lbtree")
     {
@@ -535,16 +553,10 @@ int main(int argc, char *argv[])
     db->Init();
     load();
     // db->Info();
-    if (Reverse)
+    test_uniform("r");
+    if (dbName != "lipp")
     {
-        // test_all_zipfian();
-        // test_uniform();
-    }
-    else
-    {
-        test_uniform("r");
         test_uniform("w");
-        // test_all_zipfian();
     }
     return 0;
 }

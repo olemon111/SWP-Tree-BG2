@@ -1,0 +1,14 @@
+2022年 10月 31日 星期一 12:21:01 CST
+THREAD NUMBER:         1
+LOAD_SIZE:             10000
+PUT_SIZE:              1000
+GET_SIZE:              0
+DB  name:              lipp
+Loads type:            3
+Reverse:               0
+read 2000000 values from /home/lbl/dataset/generate_random_ycsb.dat in 17 ms (117.647 M values/s)
+before newdb, dram space use: 0.0218582 GB
+Start loading ....
+[Metic-Load]: Load 10000: cost 0.001195s, kops/s: 8368.2 .
+------------------------------
+Start Testing Uniform Workload: Write
