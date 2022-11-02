@@ -18,7 +18,8 @@ function Run() {
         if [ $rw == "w" ]; then
             test_write $dbname $loadnum $opnum $scansize $thread $reverse
         else
-            test_read_write $dbname $loadnum $opnum $scansize $thread $reverse
+            # test_read_write $dbname $loadnum $opnum $scansize $thread $reverse 3 # YCSB
+            test_read_write $dbname $loadnum $opnum $scansize $thread $reverse 4 # LLT
         fi
     fi
 }
@@ -67,7 +68,6 @@ function test_read() {
     "--put-size 0 --get-size ${opnum} --loadstype 3 --reverse ${reverse} -t $thread"
 }
 
-
 function test_read_write() {
     dbname=$1
     loadnum=$2 
@@ -75,20 +75,22 @@ function test_read_write() {
     scansize=$4
     thread=$5
     reverse=$6
+    loadstype=$7
 
     # Read and Write
     # rm -f /mnt/pmem1/lbl/*
-    Loadname="llt-read-write"
-    date | tee output/swp-${dbname}-${Loadname}-${reverse}.txt
+    Loadname="llt"
+    date | tee output/swp-${dbname}-${Loadname}.txt
     # gdb --args \
-    numactl --cpubind=0 --membind=0 ${BUILDDIR}/microbench_swp --dbname ${dbname} --load-size ${loadnum} \
+    numactl --cpubind=1 --membind=1 ${BUILDDIR}/microbench_swp --dbname ${dbname} --load-size ${loadnum} \
     --put-size ${opnum} --get-size ${opnum} \
-    --loadstype 4 --reverse ${reverse} -t $thread | tee -a output/swp-${dbname}-${Loadname}-${reverse}.txt
+    --loadstype ${loadstype} --reverse ${reverse} -t $thread | tee -a output/swp-${dbname}-${Loadname}.txt
     # rm -f /mnt/pmem1/lbl/*
 
     echo "${BUILDDIR}/microbench_swp --dbname ${dbname} --load-size ${loadnum} "\
-    "--put-size ${opnum} --get-size ${opnum} --loadstype 3 --reverse ${reverse} -t $thread"
+    "--put-size ${opnum} --get-size ${opnum} --loadstype ${loadstype} --reverse ${reverse} -t $thread"
 }
+
 
 function run_all() {
     dbs="alex lipp xindex pgm"
@@ -136,9 +138,12 @@ function main() {
     fi 
 }
 
+# Test all dbs
 # main alex 2000000 10000000 0 1 0 a
-# main lipp 2000000 10000000 0 1 0 a
+main lipp 2000000 10000000 0 1 0 a
 # main xindex 2000000 10000000 0 1 0 a
 # main pgm 2000000 10000000 0 1 0 a
+# main all 2000000 10000000 0 1 0 a
 
-main all 2000000 10000000 0 1 0 a
+# Test Alex node size
+# main alex 400000000 10000000 0 1 0 a

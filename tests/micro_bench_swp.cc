@@ -147,7 +147,7 @@ template <typename T>
 std::vector<T> load_data_from_osm(
     const std::string dataname = "/home/lbl/dataset/generate_random_ycsb.dat")
 {
-    return util::load_data<T>(dataname, 2000000, true);
+    return util::load_data<T>(dataname, LOAD_SIZE, true);
 }
 
 std::vector<uint64_t> generate_random_ycsb(size_t op_num)
@@ -290,7 +290,7 @@ void load()
     cout << "[Metic-Load]: Load " << LOAD_SIZE << ": "
          << "cost " << us_times / 1000000.0 << "s, "
          << "kops/s: " << (double)(LOAD_SIZE) / (double)us_times * 1000.0 << " ." << endl;
-    cout << "after load, dram space use: " << init_dram_space_use / 1024.0 / 1024.0 << " GB" << endl;
+    cout << "after load, dram space use: " << (physical_memory_used_by_process() - init_dram_space_use) / 1024.0 / 1024.0 << " GB" << endl;
     load_pos = LOAD_SIZE;
     if (REST)
     {
@@ -503,13 +503,13 @@ void init_opts(int argc, char *argv[])
     case 0:
         data_base = generate_uniform_random(LOAD_SIZE);
         break;
-    case 1:
+    case 1: // generate YCSB
         data_base = generate_random_ycsb(LOAD_SIZE);
         break;
     case 2:
         data_base = load_data_from_osm<uint64_t>("/home/lbl/dataset/generate_uniform_random.dat");
         break;
-    case 3:
+    case 3: // YCSB
         data_base = load_data_from_osm<uint64_t>("/home/lbl/dataset/generate_random_ycsb.dat");
         break;
     case 4: // LLT

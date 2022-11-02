@@ -1,0 +1,23 @@
+2022年 11月 02日 星期三 21:29:54 CST
+THREAD NUMBER:         1
+LOAD_SIZE:             400000000
+PUT_SIZE:              10000000
+GET_SIZE:              10000000
+DB  name:              alex
+Loads type:            3
+Reverse:               0
+read 400000000 values from /home/lbl/dataset/generate_random_ycsb.dat in 2167 ms (184.587 M values/s)
+before newdb, dram space use: 2.98699 GB
+Start loading ....
+[Metic-Load]: Load 400000000: cost 326.968s, kops/s: 1223.36 .
+after load, dram space use: 14.5471 GB
+------------------------------
+Start Testing Uniform Workload: Read
+wrong get: 0
+[Metic-Operate]: Operate 10000000, cost 3.67401s, kops/s: 2721.82 .
+dram space use: 14.5845 GB
+------------------------------
+Start Testing Uniform Workload: Write
+wrong get: 0
+[Metic-Operate]: Operate 10000000, cost 3.84175s, kops/s: 2602.98 .
+dram space use: 14.5845 GB
