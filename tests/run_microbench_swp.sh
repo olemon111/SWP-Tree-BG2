@@ -93,7 +93,7 @@ function test_read_write() {
 
 
 function run_all() {
-    dbs="alex lipp xindex pgm"
+    dbs="alex lipp xindex pgm finedex"
     for dbname in $dbs; do
         echo "Run: " $dbname
         Run $dbname $1 $2 $3 1 $5 $6
@@ -140,9 +140,10 @@ function main() {
 
 # Test all dbs
 # main alex 2000000 10000000 0 1 0 a
-main lipp 2000000 10000000 0 1 0 a
+# main lipp 2000000 10000000 0 1 0 a
 # main xindex 2000000 10000000 0 1 0 a
 # main pgm 2000000 10000000 0 1 0 a
+# main finedex 2000000 10000000 0 1 0 a
 # main all 2000000 10000000 0 1 0 a
 
 # Test Alex node size

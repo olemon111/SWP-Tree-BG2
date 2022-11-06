@@ -261,7 +261,7 @@ void load()
     cout << "Start loading ...." << endl;
     timer.Record("start");
 
-    if (dbName == "alex" || dbName == "lipp" || dbName == "xindex" || dbName == "pgm") // support bulk load
+    if (dbName == "alex" || dbName == "lipp" || dbName == "xindex" || dbName == "pgm" || dbName == "finedex") // support bulk load
     {
         auto values = new std::pair<uint64_t, uint64_t>[LOAD_SIZE];
         for (int i = 0; i < LOAD_SIZE; i++)
@@ -279,7 +279,7 @@ void load()
     {
         for (int i = 0; i < LOAD_SIZE; i++)
         {
-            // cout << i << " put: " << data_base[i] << endl;
+            cout << i << " put: " << data_base[i] << endl;
             db->Put(data_base[i], data_base[i] + 1);
         }
     }
@@ -339,6 +339,7 @@ void test_uniform(string rwtype)
             db->Get(data_base[rand_pos[i]], value);
             if (value != data_base[rand_pos[i]] + 1)
             {
+                // cout << "wrong, value: " << value << ", suppose to be: " << data_base[rand_pos[i]] + 1 << endl;
                 wrong_get++;
             }
         }
@@ -547,6 +548,10 @@ void init_opts(int argc, char *argv[])
     {
         db = new PGMDynamicDB();
     }
+    else if (dbName == "finedex")
+    {
+        db = new FINEdexDB();
+    }
     else
     {
         assert(false);
@@ -560,7 +565,7 @@ int main(int argc, char *argv[])
     load();
     // db->Info();
     test_uniform("r");
-    if (dbName != "lipp")
+    if (dbName != "lipp") // LIPP provides no api for write
     {
         test_uniform("w");
     }

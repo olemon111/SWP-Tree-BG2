@@ -26,6 +26,10 @@
 #include "xindex/xindex_util.h"
 #include "pgm/pgm_index.hpp"
 #include "pgm/pgm_index_dynamic.hpp"
+// FINEdex
+#include "finedex/finedex.h"
+#include "finedex/finedex_impl.h"
+#include "finedex/function.h"
 
 #define USE_MEM
 
@@ -418,6 +422,78 @@ namespace dbInter
 
   private:
     DynamicPGM *pgm_;
+  };
+
+  class FINEdexDB : public ycsbc::KvDB
+  {
+    typedef aidel::FINEdex<uint64_t, uint64_t> aidel_t;
+
+  public:
+    FINEdexDB() : ai_(nullptr) {}
+    FINEdexDB(aidel_t *ai) : ai_(ai) {}
+    ~FINEdexDB()
+    {
+      delete ai_;
+    }
+    void Init()
+    {
+      cout << "before init finedex" << endl;
+      ai_ = new aidel_t();
+      cout << "after init finedex" << endl;
+    }
+    void Info()
+    {
+    }
+    void Bulk_load(const std::pair<uint64_t, uint64_t> data[], int size)
+    {
+      vector<uint64_t> keys;
+      vector<uint64_t> vals;
+      for (int i = 0; i < size; i++)
+      {
+        keys.push_back(data[i].first);
+        vals.push_back(data[i].second);
+      }
+      ai_->train(keys, vals, 32);
+      ai_->self_check();
+      for (int i = 0; i < size; i++)
+      {
+        // cout << "insert " << data[i].first << "-" << data[i].second << endl;
+        ai_->remove(data[i].first);
+        ai_->insert(data[i].first, data[i].second);
+      }
+    }
+    int Put(uint64_t key, uint64_t value)
+    {
+      // ai_->update(key, value);
+      ai_->insert(key, value);
+      return 1;
+    }
+    int Get(uint64_t key, uint64_t &value)
+    {
+      ai_->find(key, value);
+      return 1;
+    }
+    int Update(uint64_t key, uint64_t value)
+    {
+      ai_->update(key, value);
+      return 1;
+    }
+    int Delete(uint64_t key)
+    {
+      ai_->remove(key);
+      return 1;
+    }
+    int Scan(uint64_t start_key, int len, std::vector<std::pair<uint64_t, uint64_t>> &results)
+    {
+      ai_->scan(start_key, len, results);
+      return 1;
+    }
+    void PrintStatic()
+    {
+    }
+
+  private:
+    aidel_t *ai_;
   };
 
   class FastFairDb : public ycsbc::KvDB
