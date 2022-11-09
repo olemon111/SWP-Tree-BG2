@@ -80,6 +80,7 @@ function test_read_write() {
     # Read and Write
     # rm -f /mnt/pmem1/lbl/*
     Loadname="llt"
+    # Loadname="ycsb"
     date | tee output/swp-${dbname}-${Loadname}.txt
     # gdb --args \
     numactl --cpubind=1 --membind=1 ${BUILDDIR}/microbench_swp --dbname ${dbname} --load-size ${loadnum} \
@@ -141,9 +142,9 @@ function main() {
 # Test all dbs
 # main alex 20000000 10000000 0 1 0 a
 # main lipp 20000000 10000000 0 1 0 a
-main xindex 20000000 10000000 0 1 0 a
+# main xindex 20000000 10000000 0 1 0 a
 # main pgm 20000000 10000000 0 1 0 a
-# main finedex 20000000 10000000 0 1 0 a
+main finedex 20000000 10000000 0 1 0 a
 # main all 20000000 10000000 0 1 0 a
 
 # Test Alex node size

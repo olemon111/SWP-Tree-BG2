@@ -452,7 +452,8 @@ namespace dbInter
     void Info()
     {
       cout << "model size: " << ai_->model_size() << endl;
-      // cout << "model size: " << ai_->model_size() / (1024 * 1024 * 1024.0) << " GB" << endl;
+      cout << "index size: " << ai_->index_size() << endl;
+      cout << "model size: " << ai_->index_size() / (1024 * 1024 * 1024.0) << " GB" << endl;
     }
     void Bulk_load(const std::pair<uint64_t, uint64_t> data[], int size)
     {

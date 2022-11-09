@@ -821,7 +821,7 @@ namespace xindex
       group_t *g = groups[group_i].second;
       size += g->group_size();
     }
-    std::cout << 0 << " group size: " << groups[0].second->group_size() << std::endl;
+    // std::cout << 0 << " group size: " << groups[0].second->group_size() << std::endl;
     return size;
   }
 

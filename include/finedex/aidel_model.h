@@ -64,6 +64,7 @@ namespace aidel
         int scan(const key_t &key, const size_t n, std::vector<std::pair<key_t, val_t>> &result);
 
         void resort(std::vector<key_t> &keys, std::vector<val_t> &vals);
+        double model_size();
 
     private:
         inline size_t predict(const key_t &key);
@@ -84,6 +85,7 @@ namespace aidel
         bool *valid_flag = nullptr;
         levelbin_type **levelbins = nullptr;
         model_or_bin_t **mobs = nullptr;
+        double sz = 0;
 
         const size_t capacity;
     };

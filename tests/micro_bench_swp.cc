@@ -19,8 +19,8 @@
 #include "random.h"
 #include "utils.h"
 
-// #define REST true
-#define REST false
+#define REST true
+// #define REST false
 
 using combotree::ComboTree;
 using combotree::Random;
