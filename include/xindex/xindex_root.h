@@ -55,6 +55,7 @@ class Root {
   static void *do_adjustment(void *args);
   Root *create_new_root();
   void trim_root();
+  double index_size();
 
  private:
   void adjust_rmi();

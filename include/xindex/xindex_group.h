@@ -113,6 +113,7 @@ namespace xindex
 
     void free_data();
     void free_buffer();
+    double group_size();
 
   private:
     inline size_t locate_model(const key_t &key);

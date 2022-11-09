@@ -19,8 +19,8 @@
 #include "random.h"
 #include "utils.h"
 
-#define REST true
-// #define REST false
+// #define REST true
+#define REST false
 
 using combotree::ComboTree;
 using combotree::Random;
@@ -279,7 +279,7 @@ void load()
     {
         for (int i = 0; i < LOAD_SIZE; i++)
         {
-            cout << i << " put: " << data_base[i] << endl;
+            // cout << i << " put: " << data_base[i] << endl;
             db->Put(data_base[i], data_base[i] + 1);
         }
     }
@@ -563,7 +563,7 @@ int main(int argc, char *argv[])
     init_opts(argc, argv);
     db->Init();
     load();
-    // db->Info();
+    db->Info(); // print info such as index size
     test_uniform("r");
     if (dbName != "lipp") // LIPP provides no api for write
     {

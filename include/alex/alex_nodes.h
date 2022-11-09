@@ -61,7 +61,7 @@ class AlexNode {
   virtual ~AlexNode() = default;
 
   // The size in bytes of all member variables in this class
-  virtual long long node_size() const = 0;
+  virtual double node_size() const = 0;
 };
 
 template <class T, class P, class Alloc = std::allocator<std::pair<T, P>>>
@@ -143,8 +143,8 @@ class AlexModelNode : public AlexNode<T, P> {
     return pointer_alloc_type(allocator_);
   }
 
-  long long node_size() const override {
-    long long size = sizeof(self_type);
+  double node_size() const override {
+    double size = sizeof(self_type);
     size += num_children_ * sizeof(AlexNode<T, P>*);  // pointers to children
     return size;
   }
@@ -349,8 +349,8 @@ class AlexDataNode : public AlexNode<T, P> {
       sizeof(V);  // cannot expand beyond this number of key/data slots
 
   // Counters used in cost models
-  long long num_shifts_ = 0;                 // does not reset after resizing
-  long long num_exp_search_iterations_ = 0;  // does not reset after resizing
+  double num_shifts_ = 0;                 // does not reset after resizing
+  double num_exp_search_iterations_ = 0;  // does not reset after resizing
   int num_lookups_ = 0;                      // does not reset after resizing
   int num_inserts_ = 0;                      // does not reset after resizing
   int num_resizes_ = 0;  // technically not required, but nice to have
@@ -2221,11 +2221,11 @@ class AlexDataNode : public AlexNode<T, P> {
   /*** Stats ***/
 
   // Total size of node metadata
-  long long node_size() const override { return sizeof(self_type); }
+  double node_size() const override { return sizeof(self_type); }
 
   // Total size in bytes of key/payload/data_slots and bitmap
-  long long data_size() const {
-    long long data_size = data_capacity_ * sizeof(T);
+  double data_size() const {
+    double data_size = data_capacity_ * sizeof(T);
     data_size += data_capacity_ * sizeof(P);
     data_size += bitmap_size_ * sizeof(uint64_t);
     return data_size;

@@ -255,7 +255,7 @@ class ExpectedShiftsAccumulator : public StatAccumulator {
   // Therefore, we track n^2/4.
   void accumulate(int actual_position, int) override {
     if (actual_position > last_position_ + 1) {
-      long long dense_region_length = last_position_ - dense_region_start_idx_ + 1;
+      double dense_region_length = last_position_ - dense_region_start_idx_ + 1;
       num_expected_shifts_ += (dense_region_length * dense_region_length) / 4;
       dense_region_start_idx_ = actual_position;
     }
@@ -266,8 +266,8 @@ class ExpectedShiftsAccumulator : public StatAccumulator {
   double get_stat() override {
     if (count_ == 0) return 0;
     // first need to accumulate statistics for current packed region
-    long long dense_region_length = last_position_ - dense_region_start_idx_ + 1;
-    long long cur_num_expected_shifts =
+    double dense_region_length = last_position_ - dense_region_start_idx_ + 1;
+    double cur_num_expected_shifts =
         num_expected_shifts_ + (dense_region_length * dense_region_length) / 4;
     return cur_num_expected_shifts / static_cast<double>(count_);
   }
@@ -282,7 +282,7 @@ class ExpectedShiftsAccumulator : public StatAccumulator {
  public:
   int last_position_ = -1;
   int dense_region_start_idx_ = 0;
-  long long num_expected_shifts_ = 0;
+  double num_expected_shifts_ = 0;
   int count_ = 0;
   int data_capacity_ = -1;  // capacity of node
 };
@@ -299,7 +299,7 @@ class ExpectedIterationsAndShiftsAccumulator : public StatAccumulator {
         std::log2(std::abs(predicted_position - actual_position) + 1);
 
     if (actual_position > last_position_ + 1) {
-      long long dense_region_length = last_position_ - dense_region_start_idx_ + 1;
+      double dense_region_length = last_position_ - dense_region_start_idx_ + 1;
       num_expected_shifts_ += (dense_region_length * dense_region_length) / 4;
       dense_region_start_idx_ = actual_position;
     }
@@ -320,8 +320,8 @@ class ExpectedIterationsAndShiftsAccumulator : public StatAccumulator {
 
   double get_expected_num_shifts() {
     if (count_ == 0) return 0;
-    long long dense_region_length = last_position_ - dense_region_start_idx_ + 1;
-    long long cur_num_expected_shifts =
+    double dense_region_length = last_position_ - dense_region_start_idx_ + 1;
+    double cur_num_expected_shifts =
         num_expected_shifts_ + (dense_region_length * dense_region_length) / 4;
     return cur_num_expected_shifts / static_cast<double>(count_);
   }
@@ -338,7 +338,7 @@ class ExpectedIterationsAndShiftsAccumulator : public StatAccumulator {
   double cumulative_log_error_ = 0;
   int last_position_ = -1;
   int dense_region_start_idx_ = 0;
-  long long num_expected_shifts_ = 0;
+  double num_expected_shifts_ = 0;
   int count_ = 0;
   int data_capacity_ = -1;  // capacity of node
 };

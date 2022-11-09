@@ -144,7 +144,9 @@ namespace dbInter
 
     void Info()
     {
-      // alex_->PrintInfo();
+      cout << "model size: " << alex_->model_size() / (1024 * 1024 * 1024.0) << " GB" << endl;
+      cout << "data size: " << alex_->data_size() / (1024 * 1024 * 1024.0) << " GB" << endl;
+      cout << "total size: " << (alex_->model_size() + alex_->data_size()) / (1024 * 1024 * 1024.0) << " GB" << endl;
     }
 
     int Put(uint64_t key, uint64_t value)
@@ -205,6 +207,10 @@ namespace dbInter
     }
     void Info()
     {
+      cout << "total size with child: " << lipp_->index_size(true, true) / (1024 * 1024 * 1024.0) << endl;
+      cout << "toatl size without child: " << lipp_->index_size(true, false) / (1024 * 1024 * 1024.0) << endl;
+      cout << "size with child: " << lipp_->index_size(false, true) / (1024 * 1024 * 1024.0) << endl;
+      cout << "size without child: " << lipp_->index_size(false, false) / (1024 * 1024 * 1024.0) << endl;
       // lipp_->print_depth();
     }
     void Bulk_load(const std::pair<uint64_t, uint64_t> data[], int size)
@@ -290,7 +296,7 @@ namespace dbInter
 
     void Info()
     {
-      // xindex_->show_info();
+      cout << "index size: " << xindex_->index_size() / (1024 * 1024 * 1024.0) << endl;
     }
     int Put(uint64_t key, uint64_t value)
     {
@@ -374,6 +380,8 @@ namespace dbInter
 
     void Info()
     {
+      cout << "index size: " << pgm_->index_size_in_bytes() / (1024 * 1024 * 1024.0) << endl;
+      cout << "size: " << pgm_->size_in_bytes() / (1024 * 1024 * 1024.0) << endl;
     }
 
     // void Begin_trans()
@@ -443,6 +451,8 @@ namespace dbInter
     }
     void Info()
     {
+      cout << "model size: " << ai_->model_size() << endl;
+      // cout << "model size: " << ai_->model_size() / (1024 * 1024 * 1024.0) << " GB" << endl;
     }
     void Bulk_load(const std::pair<uint64_t, uint64_t> data[], int size)
     {

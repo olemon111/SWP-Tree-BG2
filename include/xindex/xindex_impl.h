@@ -251,6 +251,12 @@ namespace xindex
     bg_running = false;
   }
 
+  template <class key_t, class val_t, bool seq>
+  double XIndex<key_t, val_t, seq>::index_size()
+  {
+    return root->index_size();
+  }
+
 } // namespace xindex
 
 #endif // XINDEX_IMPL_H

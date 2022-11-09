@@ -810,6 +810,21 @@ namespace xindex
     return group;
   }
 
+  template <class key_t, class val_t, bool seq>
+  double Root<key_t, val_t, seq>::index_size()
+  {
+    double size = 0;
+    size += sizeof(rmi_1st_stage);
+    size += sizeof(rmi_2nd_stage);
+    for (size_t group_i = 0; group_i < group_n; group_i++)
+    {
+      group_t *g = groups[group_i].second;
+      size += g->group_size();
+    }
+    std::cout << 0 << " group size: " << groups[0].second->group_size() << std::endl;
+    return size;
+  }
+
 } // namespace xindex
 
 #endif // XINDEX_ROOT_IMPL_H

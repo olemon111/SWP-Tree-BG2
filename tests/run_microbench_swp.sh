@@ -139,12 +139,12 @@ function main() {
 }
 
 # Test all dbs
-# main alex 2000000 10000000 0 1 0 a
-# main lipp 2000000 10000000 0 1 0 a
-# main xindex 2000000 10000000 0 1 0 a
-# main pgm 2000000 10000000 0 1 0 a
-# main finedex 2000000 10000000 0 1 0 a
-# main all 2000000 10000000 0 1 0 a
+# main alex 20000000 10000000 0 1 0 a
+# main lipp 20000000 10000000 0 1 0 a
+main xindex 20000000 10000000 0 1 0 a
+# main pgm 20000000 10000000 0 1 0 a
+# main finedex 20000000 10000000 0 1 0 a
+# main all 20000000 10000000 0 1 0 a
 
 # Test Alex node size
 # main alex 400000000 10000000 0 1 0 a

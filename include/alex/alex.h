@@ -121,13 +121,13 @@ namespace alex
       int num_sideways_splits = 0;
       int num_model_node_expansions = 0;
       int num_model_node_splits = 0;
-      long long num_downward_split_keys = 0;
-      long long num_sideways_split_keys = 0;
-      long long num_model_node_expansion_pointers = 0;
-      long long num_model_node_split_pointers = 0;
-      mutable long long num_node_lookups = 0;
-      mutable long long num_lookups = 0;
-      long long num_inserts = 0;
+      double num_downward_split_keys = 0;
+      double num_sideways_split_keys = 0;
+      double num_model_node_expansion_pointers = 0;
+      double num_model_node_split_pointers = 0;
+      mutable double num_node_lookups = 0;
+      mutable double num_lookups = 0;
+      double num_inserts = 0;
       double splitting_time = 0;
       double cost_computation_time = 0;
     };
@@ -2697,9 +2697,9 @@ namespace alex
     size_t max_size() const { return size_t(-1); }
 
     // Size in bytes of all the keys, payloads, and bitmaps stored in this index
-    long long data_size() const
+    double data_size() const
     {
-      long long size = 0;
+      double size = 0;
       for (NodeIterator node_it = NodeIterator(this); !node_it.is_end();
            node_it.next())
       {
@@ -2714,9 +2714,9 @@ namespace alex
 
     // Size in bytes of all the model nodes (including pointers) and metadata in
     // data nodes
-    long long model_size() const
+    double model_size() const
     {
-      long long size = 0;
+      double size = 0;
       for (NodeIterator node_it = NodeIterator(this); !node_it.is_end();
            node_it.next())
       {
